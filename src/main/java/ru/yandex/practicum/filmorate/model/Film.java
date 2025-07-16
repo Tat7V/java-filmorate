@@ -1,9 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
@@ -22,8 +19,13 @@ public class Film {
     String description;
 
     @NotNull(message = "Дата релиза обязательна")
+    @PastOrPresent(message = "Дата релиза не может быть в будущем")
     LocalDate releaseDate;
 
     @Positive(message = "Продолжительность должна быть положительной")
     int duration;
+
+    public boolean isValidReleaseDate() {
+        return releaseDate.isAfter(LocalDate.of(1895, 12, 28));
+    }
 }

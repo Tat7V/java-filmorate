@@ -4,55 +4,80 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class UserValidationTest {
-    private Validator validator;
-    private User validUser;
+class UserValidationTest {
+    private static Validator validator;
 
-    @BeforeEach
-    void setUp() {
+    @BeforeAll
+    static void setUp() {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
-
-        validUser = new User();
-        validUser.setEmail("test@example.com");
-        validUser.setLogin("testlogin");
-        validUser.setBirthday(LocalDate.of(2011, 1, 1));
     }
 
     @Test
-    void shouldPassValidUser() {
-        Set<ConstraintViolation<User>> violations = validator.validate(validUser);
-        assertTrue(violations.isEmpty());
+    void validateEmptyEmail() {
+        User user = new User();
+        user.setEmail("");
+        user.setLogin("login");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+        assertEquals(1, violations.size());
+        assertEquals("Email не может быть пустым", violations.iterator().next().getMessage());
     }
 
     @Test
-    void shouldFailInvalidEmail() {
-        validUser.setEmail("invalid-email");
-        Set<ConstraintViolation<User>> violations = validator.validate(validUser);
+    void validateInvalidEmail() {
+        User user = new User();
+        user.setEmail("invalid-email");
+        user.setLogin("login");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
         assertEquals(1, violations.size());
         assertEquals("Некорректный формат email", violations.iterator().next().getMessage());
     }
 
     @Test
-    void shouldFailLoginWithSpaces() {
-        validUser.setLogin("test login");
-        Set<ConstraintViolation<User>> violations = validator.validate(validUser);
-        assertEquals(1, violations.size());
-        assertEquals("Логин не может содержать пробелы", violations.iterator().next().getMessage());
+    void validateEmptyLogin() {
+        User user = new User();
+        user.setEmail("email@example.com");
+        user.setLogin(" ");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertEquals(2, violations.size());
+
+        // Проверяем сообщения обеих ошибок
+        List<String> messages = violations.stream()
+                .map(ConstraintViolation::getMessage)
+                .collect(Collectors.toList());
+
+        assertTrue(messages.contains("Логин не может быть пустым"));
+        assertTrue(messages.contains("Логин не может содержать пробелы"));
     }
 
+
     @Test
-    void shouldFailBirthdayInFuture() {
-        validUser.setBirthday(LocalDate.now().plusDays(1));
-        Set<ConstraintViolation<User>> violations = validator.validate(validUser);
+    void validateFutureBirthday() {
+        User user = new User();
+        user.setEmail("email@example.com");
+        user.setLogin("login");
+        user.setBirthday(LocalDate.now().plusDays(1));
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
         assertEquals(1, violations.size());
         assertEquals("Дата рождения не может быть в будущем", violations.iterator().next().getMessage());
     }
