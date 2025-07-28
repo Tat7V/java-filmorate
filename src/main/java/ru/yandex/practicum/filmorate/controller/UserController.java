@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -16,6 +17,8 @@ public class UserController {
     private static final String FRIENDS_PATH = ID_PATH + "/friends";
     private static final String FRIEND_ID_PATH = FRIENDS_PATH + "/{friendId}";
     private static final String COMMON_FRIENDS_ID_PATH = FRIENDS_PATH + "/common/{otherId}";
+    private static final String CONFIRM_FRIEND_PATH = FRIEND_ID_PATH + "/confirm";
+    private static final String STATUS_FRIEND_PATH = FRIEND_ID_PATH + "/status";
 
     @Autowired
     public UserController(UserService userService) {
@@ -62,5 +65,17 @@ public class UserController {
             @PathVariable Long id,
             @PathVariable Long otherId) {
         return userService.getCommonFriends(id, otherId);
+    }
+
+    @PutMapping(CONFIRM_FRIEND_PATH)
+    public void confirmFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        userService.confirmFriend(id, friendId);
+    }
+
+    @GetMapping(STATUS_FRIEND_PATH)
+    public FriendshipStatus getFriendshipStatus(
+            @PathVariable Long id,
+            @PathVariable Long friendId) {
+        return userService.getFriendshipStatus(id, friendId);
     }
 }

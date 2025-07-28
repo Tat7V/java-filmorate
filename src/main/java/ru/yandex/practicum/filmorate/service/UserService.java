@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserStorage userStorage;
     private final Map<Long, Set<Long>> friends = new HashMap<>();
+    private final Map<Long, Map<Long, FriendshipStatus>> friendshipStatuses = new HashMap<>();
 
     @Autowired
     public UserService(UserStorage userStorage) {
@@ -46,8 +48,19 @@ public class UserService {
         User user = getById(userId);
         User friend = getById(friendId);
 
-        friends.computeIfAbsent(userId, (key) -> new HashSet<>()).add(friendId);
-        friends.computeIfAbsent(friendId, (key) -> new HashSet<>()).add(userId);
+        friends.computeIfAbsent(userId, k -> new HashSet<>()).add(friendId);
+        friendshipStatuses.computeIfAbsent(userId, k -> new HashMap<>())
+                .put(friendId, new FriendshipStatus(1, "Неподтверждённая"));
+    }
+
+    public void confirmFriend(Long userId, Long friendId) {
+        if (!friends.containsKey(userId) || !friends.get(userId).contains(friendId)) {
+            throw new NotFoundException("Запрос на дружбу не найден");
+        }
+
+        friendshipStatuses.get(userId).put(friendId, new FriendshipStatus(2, "Подтверждённая"));
+        friendshipStatuses.computeIfAbsent(friendId, k -> new HashMap<>())
+                .put(userId, new FriendshipStatus(2, "Подтверждённая"));
     }
 
     public void removeFriend(Long userId, Long friendId) {
@@ -56,9 +69,11 @@ public class UserService {
 
         if (friends.containsKey(userId)) {
             friends.get(userId).remove(friendId);
+            friendshipStatuses.get(userId).remove(friendId);
         }
         if (friends.containsKey(friendId)) {
             friends.get(friendId).remove(userId);
+            friendshipStatuses.get(friendId).remove(userId);
         }
     }
 
@@ -82,5 +97,12 @@ public class UserService {
                 .filter(otherFriends::contains)
                 .map(this::getById)
                 .collect(Collectors.toList());
+    }
+
+    public FriendshipStatus getFriendshipStatus(Long userId, Long friendId) {
+        if (!friendshipStatuses.containsKey(userId) || !friendshipStatuses.get(userId).containsKey(friendId)) {
+            throw new NotFoundException("Статус дружбы не найден");
+        }
+        return friendshipStatuses.get(userId).get(friendId);
     }
 }

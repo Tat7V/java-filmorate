@@ -5,15 +5,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/films")
 public class FilmController {
     private final FilmService filmService;
     private static final String LIKE_PATH = "/{id}/like/{userId}";
+    private static final String GENRE_PATH = "/{id}/genre/";
+    private static final String MPA_PATH = "/{id}/mpa/";
 
     @Autowired
     public FilmController(FilmService filmService) {
@@ -57,5 +62,24 @@ public class FilmController {
     public List<Film> getPopular(
             @RequestParam(defaultValue = "10") int count) {
         return filmService.getPopularFilms(count);
+    }
+    @PostMapping(GENRE_PATH)
+    public void addGenre(@PathVariable Long id, @RequestBody Genre genre) {
+        filmService.addGenreToFilm(id, genre);
+    }
+
+    @DeleteMapping(GENRE_PATH)
+    public void removeGenre(@PathVariable Long id, @RequestBody Genre genre) {
+        filmService.removeGenreFromFilm(id, genre);
+    }
+
+    @PostMapping(MPA_PATH)
+    public void setMpa(@PathVariable Long id, @RequestBody Mpa mpa) {
+        filmService.setMpa(id, mpa);
+    }
+
+    @DeleteMapping(MPA_PATH)
+    public void removeMpa(@PathVariable Long id) {
+        filmService.removeMpa(id);
     }
 }
