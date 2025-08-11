@@ -43,7 +43,7 @@ public class BaseFilmService implements FilmService {
     public Film update(Film film) {
         validateFilm(film);
         if (filmRepository.getById(film.getId()).isEmpty()) {
-            throw new NotFoundException("Фильм с id=" + film.getId() + " не найден");
+            throw new NotFoundException(String.format("Фильм с id=%d не найден", film.getId()));
         }
         return filmRepository.save(film);
     }
@@ -56,14 +56,14 @@ public class BaseFilmService implements FilmService {
     @Override
     public Film getById(Long id) {
         return filmRepository.getById(id)
-                .orElseThrow(() -> new NotFoundException("Фильм с id=" + id + " не найден"));
+                .orElseThrow(() -> new NotFoundException(String.format("Фильм с id=%d не найден", id)));
     }
 
     @Override
     public void addLike(Long filmId, Long userId) {
         getById(filmId);
         userRepository.getById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + userId + " не найден"));
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id=%d не найден", userId)));
 
         filmRepository.addLike(filmId, userId);
     }
@@ -72,7 +72,7 @@ public class BaseFilmService implements FilmService {
     public void removeLike(Long filmId, Long userId) {
         getById(filmId);
         userRepository.getById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + userId + " не найден"));
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id=%d не найден", userId)));
 
         filmRepository.deleteLike(filmId, userId);
     }
@@ -88,7 +88,7 @@ public class BaseFilmService implements FilmService {
         }
         if (film.getMpa() != null) {
             mpaRepository.getById(film.getMpa().getId())
-                    .orElseThrow(() -> new NotFoundException("MPA с id=" + film.getMpa().getId() + " не существует"));
+                    .orElseThrow(() -> new NotFoundException(String.format("MPA с id=%d не существует", film.getMpa().getId())));
         } else {
             throw new ValidationException("Фильм должен иметь возрастной рейтинг (MPA)");
         }

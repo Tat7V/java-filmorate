@@ -20,7 +20,7 @@ public class GenreService {
     }
 
     public Genre getById(long id) {
-        return genreRepository.getById(id).orElseThrow(() -> new NotFoundException("Жанр с id=" + id + " не найден"));
+        return genreRepository.getById(id).orElseThrow(() -> new NotFoundException(String.format("Жанр с id=%d не найден", id)));
     }
 
     public Collection<Genre> getByIds(Collection<Long> ids) {

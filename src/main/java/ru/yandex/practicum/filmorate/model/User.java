@@ -31,5 +31,4 @@ public class User {
     LocalDate birthday;
 
     Set<Long> friends = new HashSet<>();
-
 }
