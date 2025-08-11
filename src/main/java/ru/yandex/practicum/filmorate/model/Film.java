@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -24,6 +26,11 @@ public class Film {
 
     @Positive(message = "Продолжительность должна быть положительной")
     int duration;
+
+    @NotNull
+    Mpa mpa;
+    Set<Genre> genres = new HashSet<>();
+    Set<Long> likes = new HashSet<>();
 
     public boolean isValidReleaseDate() {
         return releaseDate.isAfter(LocalDate.of(1895, 12, 28));
